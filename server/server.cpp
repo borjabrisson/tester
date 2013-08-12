@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "listen/hijo.h"
 
 // g++ -fpermissive server.cpp -o server.out
 
@@ -48,7 +49,7 @@ int main( int argc, char *argv[] )
     }
     /* Initialize socket structure */
     bzero((char *) &serv_addr, sizeof(serv_addr));
-    portno = 5001;
+    portno = 5005;
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(portno);
@@ -64,17 +65,19 @@ int main( int argc, char *argv[] )
      * process will go in sleep mode and will wait 
      * for the incoming connection
      */
+	hijo conector;
     listen(sockfd,5);
     clilen = sizeof(cli_addr);
 	int pid;
+	int i=1;
     while (1) 
     {
-        newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
+/*        newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
         if (newsockfd < 0){
             perror("ERROR on accept");
             exit(1);
         }
-        /* Create child process */
+//         Create child process
         pid = fork();
         if (pid < 0)
         {
@@ -83,7 +86,7 @@ int main( int argc, char *argv[] )
         }
         if (pid == 0)  
         {
-            /* This is the client process */
+//             This is the client process
             close(sockfd);
             doprocessing(newsockfd);
             exit(0);
@@ -91,6 +94,16 @@ int main( int argc, char *argv[] )
         else
         {
             close(newsockfd);
+        }*/
+		newsockfd = accept(sockfd,(struct sockaddr *) &cli_addr, &clilen);
+        if (newsockfd < 0){
+            perror("ERROR on accept");
+            exit(1);
         }
-    } /* end of while */
+		 printf("%d tiene el %d\n",i,newsockfd);
+        conector.run(newsockfd);
+		i++;
+// 		close(newsockfd);
+    } 
+    /* end of while */
 }

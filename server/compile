@@ -1,0 +1,5 @@
+g++ -O0 -g3 -Wall -c -fmessage-length=0  -lpthread -MMD -MP -MF"hijo.d" -MT"hijo.d" -o "hijo.o" "listen/hijo.cpp"
+
+g++  server.cpp  -fpermissive -lpthread -o server.out ./hijo.o 
+
+rm *.o *.d

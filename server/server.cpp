@@ -7,6 +7,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+
+// g++ -fpermissive server.cpp -o server.out
+
 void doprocessing (int sock)
 {
     int n;

@@ -60,8 +60,8 @@ void serverIP::connect() {
 }
 
 void serverIP::desconnect() {
-	close(this->sockfd);
-// 	shutdown(this->sockfd,2);
+// 	close(this->sockfd);
+	shutdown(this->sockfd,2);
 }
 void serverIP::lunchHandle(int newsockfd) {
 	this->conector.run(newsockfd);

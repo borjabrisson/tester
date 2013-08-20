@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 
 #include "listen/hijo.h"
+#include "configuration/configuration.h"
 
 // g++ -fpermissive server.cpp -o server.out
 
@@ -52,6 +53,7 @@ int main( int argc, char *argv[] )
     portno = 5005;
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
+// 	cout << "IP del servidor= "<< INADDR_ANY<< "  "<<AF_INET<< endl;
     serv_addr.sin_port = htons(portno);
  
     /* Now bind the host address using bind() call.*/
@@ -105,5 +107,6 @@ int main( int argc, char *argv[] )
 		i++;
 // 		close(newsockfd);
     } 
+    close(sockfd);
     /* end of while */
 }

@@ -23,5 +23,5 @@ int main( int argc, char *argv[] )
 	cin >> input;
 	server.free();
 	cin >> input;
-	sleep(20);
+// 	sleep(20);
 }

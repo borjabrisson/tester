@@ -74,6 +74,7 @@ void conectorBusCan::setCommand() {
 	commandsID.insert(pair<string,string>("02","GetFirmware"));
 	commandsID.insert(pair<string,string>("51","CloseRelay"));
 	commandsID.insert(pair<string,string>("52","SwitchRelay"));
+	commandsID.insert(pair<string,string>("42","SetCFG"));
 }
 
 void conectorBusCan::setNameCommand() {
@@ -100,21 +101,162 @@ int conectorBusCan::getIDCommand(string id) {
 	return ((id[0]-48)*16) + (id[1]-48);
 }
 
+
+
+bool conectorBusCan::buildEmptyCmd(string cmd, string node) {
+	string msg =node+cmd+"00";
+		msg += this->calculateCRC(msg);
+	return 	this->sendMessage(msg);
+}
+
+bool conectorBusCan::buildArgsCmd(string cmd, string node, string args,int minArgs, int maxArgs) {
+	string msg =node+cmd;
+	int size = args.size()/2;
+		if ( (size >= minArgs) && (size <= maxArgs) ){
+			msg += "0/";//+(string)(char)(48+size);
+			msg += args + this->calculateCRC(msg+args);
+	return		this->sendMessage(msg);
+		}
+		return false;
+}
+
+bool conectorBusCan::sendMessage(string msg) {
+	string out = '\x02'+msg+'\x03';
+	cout << "Enviamos al bus: "<< out << endl;
+	return true;
+}
+
 bool conectorBusCan::exec(string command, string node, string args) {
 	string id = commandsName[command];
 
 	cout << "ID: "<< id<< " -- " << getIDCommand(id)<< endl;
 	switch (getIDCommand(id)){
 	case cm_TestLink:
-		cout << "TestLink"<< endl;
+		if(command == "TestCtrLink") node="00";
+		this->buildEmptyCmd(id,node);
 		break;
 	case cm_Reset:
-		cout << "Reset"<< endl;
+		this->cmReset(node);
+		break;
+	case cm_GetFirmware:
+		this->cmGetFirmware(node);
 		break;
 	case cm_SwitchRelay:
 		cout << "nose"<< endl;
 		break;
+	case cm_SetCFG:
+		this->buildArgsCmd(id,node,args,6,6);
+		break;
 	}
 	return false;
 }
+/*
+void conectorBusCan::cmTestLink(string ID) {
+	string msg =ID+"0000";
+	msg += this->calculateCRC(msg);
+	this->sendMessage(msg);
+}
+
+void conectorBusCan::cmReset(string ID) {
+	string msg =ID+"0100";
+	msg += this->calculateCRC(msg);
+	this->sendMessage(msg);
+}
+
+void conectorBusCan::cmGetFirmware(string ID) {
+	string msg =ID+"0200";
+		msg += this->calculateCRC(msg);
+		this->sendMessage(msg);
+}
+
+void conectorBusCan::cmCloseRelay(string ID, string args) {
+	string msg =ID+"5102";
+	if (args.size() == 4){
+		msg += args + this->calculateCRC(msg+args);
+		this->sendMessage(msg);
+	}
+}
+
+void conectorBusCan::cmSwitchRelay(string ID, string args) {
+	string msg =ID+"5202";
+		if (args.size() == 4){
+			msg += args + this->calculateCRC(msg+args);
+			this->sendMessage(msg);
+		}
+}
+
+void conectorBusCan::cmWrDisplay(string ID, string args) {
+	string msg =ID+"0B";
+	int size = args.size();
+		if ( (size > 2) && (size < 13) ){
+			msg += "0"+size;
+			msg += args + this->calculateCRC(msg+args);
+			this->sendMessage(msg);
+		}
+}
+
+void conectorBusCan::cmWrInmDisplay(string ID, string args) {
+	string msg =ID+"0C";
+	int size = args.size();
+		if ( (size > 2) && (size < 13) ){
+			msg += "0"+size;
+			msg += args + this->calculateCRC(msg+args);
+			this->sendMessage(msg);
+		}
+}
+
+void conectorBusCan::cmClrDisplay(string ID) {
+	string msg =ID+"0A00";
+		msg += this->calculateCRC(msg);
+		this->sendMessage(msg);
+}
+
+void conectorBusCan::cmSaveAndRestoreDisplay(string ID, string args) {
+}
+
+void conectorBusCan::cmActiveLedBuzzer(string ID, string args) {
+	string msg =ID+"5A02";
+		if (args.size() == 4){
+			msg += args + this->calculateCRC(msg+args);
+			this->sendMessage(msg);
+		}
+}
+
+void conectorBusCan::cmSwitchLed(string ID, string args) {
+	string msg =ID+"5B02";
+		if (args.size() == 4){
+			msg += args + this->calculateCRC(msg+args);
+			this->sendMessage(msg);
+		}
+}
+
+void conectorBusCan::cmOutPort(string ID, string args) {
+}
+
+void conectorBusCan::cmEjectCard(string ID) {
+}
+
+void conectorBusCan::cmCaptureCard(string ID) {
+}
+
+void conectorBusCan::cmSetCFG(string ID, string args) {
+	string msg =ID+"4206";
+		if (args.size() == 12){
+			msg += args + this->calculateCRC(msg+args);
+			this->sendMessage(msg);
+		}
+}
+
+void conectorBusCan::cmGetCFG(string ID) {
+	string msg =ID+"4300";
+		msg += this->calculateCRC(msg);
+		this->sendMessage(msg);
+}
+
+void conectorBusCan::cmTxDigitalInput(string ID) {
+}
+
+
+*/
+
 

@@ -52,7 +52,8 @@ int main() {
 	string cmd, node,args;
 	conector.Open();
 // 	conector.Open("/dev/ttyS0");
-    conector.WaitForBlock();
+    conector.launchListener();
+	
 	while(true){
 		cout << "comando: ";	cin >> cmd;
 		if (cmd == "exit") break;

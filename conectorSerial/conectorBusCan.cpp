@@ -11,6 +11,8 @@ conectorBusCan::conectorBusCan() {
 	// TODO Auto-generated constructor stub
 	setCommand();
 	setNameCommand();
+	this->listener=false;
+	this->temp =0;
 }
 
 string conectorBusCan::partialHex(int dec) {
@@ -209,8 +211,33 @@ void conectorBusCan::Open(string port){
 	this->conector.Configure_Port(B9600,"8N1"); 
 }
 	
-void conectorBusCan::WaitForBlock(){
-	this->conector.Create_Thread_Port(); 
+void conectorBusCan::runListener(){
+	string input;
+	while(this->listener){
+		if (this->conector.WaitForBlock() != 0){
+			this->conector.Gets_Port(input);
+			cout << "BusCan recibido: " << input << endl;
+			input ="";
+// 			if(this->temp == 0){
+// 				this->temp++;
+// 				this->exec("TestCtrLink");
+// 			}
+		}
+	}
+}
+
+void *conectorBusCan::Handle_Thread(void *thread) {
+	((conectorBusCan *) thread)->runListener();
+	return NULL;
+}
+
+void conectorBusCan::launchListener(){
+	if (!this->listener){
+		this->listener=true;
+		cout << "entramos en Create_Thread_Port" << endl;
+		pthread_t idHilo;
+		pthread_create(&idHilo, NULL, &conectorBusCan::Handle_Thread,  (void *)this);
+	}
 }
 
 void conectorBusCan::Close(){

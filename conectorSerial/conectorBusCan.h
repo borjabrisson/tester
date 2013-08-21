@@ -49,12 +49,16 @@ protected: // atributos
 	map<string,string> commandsName;
 
 	conectorSerial conector;
+	bool listener;
+	int temp;
 
 private: // Ejecución de comandos.
 	bool sendMessage(string msg);
 	bool buildEmptyCmd(string cmd,string node);
 	bool buildArgsCmd(string cmd,string node,string args,int minArgs,int maxArgs);
 
+	void runListener();
+	static void *Handle_Thread(void *hPort);
 protected:
 	string partialHex(int dec);
 	string HexToStr(int dec);
@@ -62,6 +66,8 @@ protected:
 	void setCommand();
 	void setNameCommand();
 	int getIDCommand(string id);
+	
+	
 public:
 	conectorBusCan();
 	virtual ~conectorBusCan();
@@ -69,8 +75,9 @@ public:
 	virtual bool exec(string command,string node="",string args="");
 	void Open(string port="/dev/ttyUSB0");
 	
-	void WaitForBlock();	
+	void launchListener();
 	void Close();
+		
 };
 
 #endif /* CONECTORBUSCAN_H_ */

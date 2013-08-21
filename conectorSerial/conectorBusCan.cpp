@@ -9,7 +9,6 @@
 
 conectorBusCan::conectorBusCan() {
 	// TODO Auto-generated constructor stub
-	this->port="/dev/";
 	setCommand();
 	setNameCommand();
 }
@@ -122,8 +121,7 @@ bool conectorBusCan::buildEmptyCmd(string cmd, string node) {
 	return this->sendMessage(msg);
 }
 
-bool conectorBusCan::buildArgsCmd(string cmd, string node, string args,
-		int minArgs, int maxArgs) {
+bool conectorBusCan::buildArgsCmd(string cmd, string node, string args,int minArgs, int maxArgs) {
 	string msg = node + cmd;
 	int size = args.size() / 2;
 	if ((size >= minArgs) && (size <= maxArgs)) {
@@ -139,6 +137,8 @@ bool conectorBusCan::buildArgsCmd(string cmd, string node, string args,
 bool conectorBusCan::sendMessage(string msg) {
 	string out = '\x02' + msg + '\x03';
 	cout << "Enviamos al bus: " << out << endl;
+	
+	this->conector.Write_Port(out);
 	return true;
 }
 
@@ -202,4 +202,17 @@ bool conectorBusCan::exec(string command, string node, string args) {
 		break;
 	}
 	return false;
+}
+
+void conectorBusCan::Open(string port){
+	this->conector.Open_Port(port);
+	this->conector.Configure_Port(B9600,"8N1"); 
+}
+	
+void conectorBusCan::WaitForBlock(){
+	this->conector.Create_Thread_Port(); 
+}
+
+void conectorBusCan::Close(){
+	this->conector.Close_Port();
 }

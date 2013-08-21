@@ -19,8 +19,10 @@ using namespace std;
 #include <string.h>  /* String function definitions. */
 #include <unistd.h>  /* UNIX standard function definitions. */
 #include <fcntl.h>   /* File control definitions. */
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <poll.h>
 
 #include <termios.h> /* POSIX terminal control definitions. */
 
@@ -85,6 +87,8 @@ public:
 	void Notify_Event();
 	static void *Handle_Thread(void *hPort);
 	pthread_t Create_Thread_Port();
+	
+	int WaitForBlock(int time=-1);
 };
 
 #endif /* CONECTORSERIAL_H_ */

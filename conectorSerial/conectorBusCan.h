@@ -20,6 +20,9 @@
 
 using namespace std;
 
+#include "conectorSerial.h"
+#define ENABLE_SERIAL_PORT_EVENT
+
 enum codeNumberCommand{
 	cm_TestLink = 0,
 	cm_Reset =1,
@@ -45,7 +48,7 @@ protected: // atributos
 	map<string,string> commandsID;
 	map<string,string> commandsName;
 
-	string port;
+	conectorSerial conector;
 
 private: // Ejecución de comandos.
 	bool sendMessage(string msg);
@@ -64,6 +67,10 @@ public:
 	virtual ~conectorBusCan();
 	string calculateCRC(string command);
 	virtual bool exec(string command,string node="",string args="");
+	void Open(string port="/dev/ttyUSB0");
+	
+	void WaitForBlock();	
+	void Close();
 };
 
 #endif /* CONECTORBUSCAN_H_ */

@@ -377,10 +377,26 @@ void conectorSerial::SERIAL_PORT_EVENT() {
      input.clear();
 }
 
+int conectorSerial::WaitForBlock(int time){
+	struct pollfd fds[1];
+	int ret=-1;
+
+	fds[0].fd = this->fd;
+    fds[0].events = POLLRDNORM | POLLIN;
+	ret = poll(fds, 1, time);
+	if (ret < 0){ 
+		perror("Se ha producido un error");
+		exit(2);
+	}
+	if (ret >0){
+		return 1;
+	}
+	return 0;
+}
+
 void conectorSerial::Notify_Event(){
-	printf("SERIAL_PORT_EVENT [OK]\n");
 	do {
-		if (this->Kbhit_Port() != 0)this->SERIAL_PORT_EVENT();
+		if (this->WaitForBlock() != 0)this->SERIAL_PORT_EVENT();
 	} while (TRUE);
 }
 void *conectorSerial::Handle_Thread(void *hPort) {

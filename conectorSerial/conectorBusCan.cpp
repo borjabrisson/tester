@@ -213,10 +213,25 @@ void conectorBusCan::Open(string port){
 	
 void conectorBusCan::runListener(){
 	string input;
+	string cmd;
+	string args;
 	while(this->listener){
 		if (this->conector.WaitForBlock() != 0){
 			this->conector.Gets_Port(input);
 			cout << "BusCan recibido: " << input << endl;
+			
+			cmd =input.substr(3,2); 
+			args = input.substr(7,(input.length()-10));
+			if (cmd == "CB"){
+				cout << "Track"<< endl;
+				exec("ClrDisplay",input.substr(1,2));
+				exec("WrInmDisplay",input.substr(1,2),"003031323334");
+			}
+			else if(cmd == "8D"){
+				cout << "Tecla"<< endl;
+				exec("ClrDisplay",input.substr(1,2));
+				exec("WrInmDisplay",input.substr(1,2),"00"+args);
+			}
 			input ="";
 // 			if(this->temp == 0){
 // 				this->temp++;

@@ -17,13 +17,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
+#include <math.h>  
 
 using namespace std;
 
 #include "conectorSerial.h"
 #define ENABLE_SERIAL_PORT_EVENT
 
-enum codeNumberCommand{
+enum codePCCommand{
 	cm_TestLink = 0,
 	cm_Reset =1,
 	cm_GetFirmware=2,
@@ -43,7 +44,29 @@ enum codeNumberCommand{
 	cm_TxDigitalInput=0x53
 };
 
+enum codeNodeCommand{
+	cm_OnTrack=0xCB,
+	cm_OnDigitalInput=0xD2,
+	cm_OnFcnKey=0x8D
+};
+
+enum codeResponseCommand{ // Nos indica los valores de OPC de las respuestas de comandos previamente lanzados
+	res_TestLink=0x80,
+	res_Reset =0x81,
+	res_GetFirmware=0x82,
+	res_SaveAndRestoreDisplay=0x8E,
+	res_OutputPort=0xC0,
+	res_GetCFG=0xB2
+};
+
+
 class conectorBusCan {
+private:
+	typedef struct sendResponse_struct{
+	conectorBusCan* obj;
+	string msg;
+	} sendResponse;
+	
 protected: // atributos
 	map<string,string> commandsID;
 	map<string,string> commandsName;
@@ -58,25 +81,42 @@ private: // Ejecución de comandos.
 	bool buildArgsCmd(string cmd,string node,string args,int minArgs,int maxArgs);
 
 	void runListener();
+	
+	static void *Thread_HandleResponse(void *response);
 	static void *Handle_Thread(void *hPort);
+	
+	string getCMD(string msg);
+	string getNode(string msg);
+	string getArgs(string msg);
+	
 protected:
 	string partialHex(int dec);
 	string HexToStr(int dec);
 
 	void setCommand();
 	void setNameCommand();
-	int getIDCommand(string id);
+	int StrToInt(string id);
+	bool checkCRC(string msg);	
 	
+	string calculateCRC(string command);
+	virtual void responseAction(string);
+	
+	string StrToDbHex(string text);
 	
 public:
 	conectorBusCan();
 	virtual ~conectorBusCan();
-	string calculateCRC(string command);
+	
+	
 	virtual bool exec(string command,string node="",string args="");
 	void Open(string port="/dev/ttyUSB0");
 	
 	void launchListener();
 	void Close();
+	
+	void setText(string msg);
+	void writeText(string msg);
+	void writeLine(int line,string text);
 		
 };
 

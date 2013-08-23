@@ -109,7 +109,7 @@ string conectorBusCan::calculateCRC(string command) {
 	return this->HexToStr(amount);
 }
 
-int conectorBusCan::getIDCommand(string id) {
+int conectorBusCan::StrToInt(string id) {
 	if (id[0] > '9')
 		id[0] -= 7;
 	if (id[1] > '9')
@@ -146,9 +146,7 @@ bool conectorBusCan::sendMessage(string msg) {
 
 bool conectorBusCan::exec(string command, string node, string args) {
 	string id = commandsName[command];
-
-	cout << "ID: " << id << " -- " << getIDCommand(id) << endl;
-	switch (getIDCommand(id)) {
+	switch (StrToInt(id)) {
 	case cm_TestLink:
 		if (command == "TestCtrLink")
 			node = "00";
@@ -202,6 +200,9 @@ bool conectorBusCan::exec(string command, string node, string args) {
 	case cm_TxDigitalInput:
 		this->buildEmptyCmd(id, node);
 		break;
+	default:
+		writeText(args);
+		break;
 	}
 	return false;
 }
@@ -213,30 +214,14 @@ void conectorBusCan::Open(string port){
 	
 void conectorBusCan::runListener(){
 	string input;
-	string cmd;
-	string args;
+	sendResponse block;
 	while(this->listener){
 		if (this->conector.WaitForBlock() != 0){
 			this->conector.Gets_Port(input);
-			cout << "BusCan recibido: " << input << endl;
-			
-			cmd =input.substr(3,2); 
-			args = input.substr(7,(input.length()-10));
-			if (cmd == "CB"){
-				cout << "Track"<< endl;
-				exec("ClrDisplay",input.substr(1,2));
-				exec("WrInmDisplay",input.substr(1,2),"003031323334");
-			}
-			else if(cmd == "8D"){
-				cout << "Tecla"<< endl;
-				exec("ClrDisplay",input.substr(1,2));
-				exec("WrInmDisplay",input.substr(1,2),"00"+args);
-			}
+			if (!checkCRC(input))continue; // Se tiene que decidir que hacer. Esperamos a la siguiente, o hacemos algo diferente.¿?
+			block.obj= this;			block.msg = input;
+			pthread_create(new pthread_t, NULL, &conectorBusCan::Thread_HandleResponse,  (void *)&block);
 			input ="";
-// 			if(this->temp == 0){
-// 				this->temp++;
-// 				this->exec("TestCtrLink");
-// 			}
 		}
 	}
 }
@@ -246,15 +231,121 @@ void *conectorBusCan::Handle_Thread(void *thread) {
 	return NULL;
 }
 
+void *conectorBusCan::Thread_HandleResponse(void *response){
+	sendResponse *msg = response;
+	msg->obj->responseAction(msg->msg);
+	return NULL;
+}
+
 void conectorBusCan::launchListener(){
 	if (!this->listener){
 		this->listener=true;
 		cout << "entramos en Create_Thread_Port" << endl;
-		pthread_t idHilo;
-		pthread_create(&idHilo, NULL, &conectorBusCan::Handle_Thread,  (void *)this);
+		pthread_create(new pthread_t, NULL, &conectorBusCan::Handle_Thread,  (void *)this);
 	}
 }
 
 void conectorBusCan::Close(){
 	this->conector.Close_Port();
 }
+
+string conectorBusCan::getCMD(string msg){
+	 return msg.substr(3,2);
+}
+string conectorBusCan::getNode(string msg){
+	return msg.substr(1,2);
+}
+string conectorBusCan::getArgs(string msg){
+	if (msg.length()> 7)return msg.substr(7,(msg.length()-10));
+	return "";
+}
+
+bool conectorBusCan::checkCRC(string msg){
+	string crc, msgCRC = msg.substr(msg.length()-3,2);
+	crc = msg.substr(1,msg.length()-4);
+	crc = this->calculateCRC(crc);
+	return(crc == msgCRC);
+}
+
+void conectorBusCan::responseAction(string msg){
+	string cmd,node,args;
+	cmd = this->getCMD(msg);	node = this->getNode(msg);		args = this->getArgs(msg);
+	
+	switch (StrToInt(cmd)){
+		case cm_OnFcnKey:
+				cout << "Tecla respondida: "<< (char)StrToInt(args)<<endl;
+				exec("ClrDisplay",node);
+				exec("WrInmDisplay",node,"00"+args);
+			break;
+		case cm_OnDigitalInput:
+			break;
+		case cm_OnTrack:
+				cout << "Track yeee"<< endl;
+				exec("ClrDisplay",node);
+				exec("WrInmDisplay",node,"003031323334");
+			break;
+		case res_TestLink : case res_Reset : case res_GetFirmware : case res_SaveAndRestoreDisplay : 
+		case res_OutputPort : case res_GetCFG :
+				cout << "Se ha recibido una respuesta a un evento previo "+cmd << endl;
+				cout << msg << endl;
+			break;
+	}
+	
+}
+
+
+void setText(string msg){
+	
+}
+
+string conectorBusCan::StrToDbHex(string text){
+	string out="";
+	for(int i =0;i< text.size();i++){
+		out += this->HexToStr(text[i]);
+	}
+	cout << "StrToDbHex valor devuelto"<< out <<endl;
+	return out;
+}
+
+void conectorBusCan::writeLine(int line,string text){
+	int size = text.length();
+	string buffer="";
+	int pos=0,nblock=0;
+// 	if (size > 20){
+// 		text.substr(0,20);
+// 		size=20;
+// 	}
+// 	nblock = ceil(size/5)-1;
+// 	for (int i=0; i<nblock;i++){
+// 		exec("WrDisplay","02",HexToStr(i*5)+StrToDbHex(text.substr(i*5,5)));
+// 	}
+	for(int i=0;( (i<size) && (i<20) );i++){
+		cout << "writeLine: "<< i<<endl;
+		if ((i != 0) && ((i %5)== 0)){
+			exec("WrDisplay","02",HexToStr(pos)+StrToDbHex(buffer));//buffer);
+			pos+=5;
+			buffer.clear();
+		}
+		else	buffer += text[i];
+	}
+}
+
+void conectorBusCan::writeText(string msg){
+	exec("ClrDisplay","02");
+	writeLine(1,msg);/*
+	string first,second;
+	int size;
+	exec("ClrDisplay","02");
+	if (msg.length()>20){
+		first= msg.substr(0,20);
+		second = msg.substr(20,msg.length());
+	}
+	else		first=msg;
+	*/
+	
+}
+
+// CFG previa: 02 B2 06 F0E00A0A6300 D2
+
+// A poner CFG: C08014146300
+

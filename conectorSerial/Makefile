@@ -5,6 +5,7 @@ MySQLFLAGS = `mysql_config --cflags --libs`
 
 all	:  conectorBusCan
 	${CC} main.cpp -o conector.out "serie.o" "busCan.o" -fpermissive ${BASEFLAGS} 
+	rm *.o *.d
 serverIP: listen
 #	${CC} -fpermissive ${BASEFLAGS}  ${CPPFLAGS} -MF"serverIP.d" -MT"serverIP.d" -o "serverIP.o" serverIP.cpp
 conectorSerial	: 

@@ -8,6 +8,7 @@
 
 #include "conectorSerial.h"
 #include "conectorBusCan.h"
+#include "apiBusCan.h"
 
 #include <iostream>
 
@@ -48,7 +49,7 @@ int main() {
 
 
 int main() {
-	conectorBusCan conector;
+	apiBusCan conector;
 	string cmd, node,args;
 	conector.Open();
 // 	conector.Open("/dev/ttyS0");

@@ -89,6 +89,10 @@ public:
 	pthread_t Create_Thread_Port();
 	
 	int WaitForBlock(int time=-1);
+	
+	
+	HANDLE getFD();
+	void setFD(HANDLE fd);
 };
 
 #endif /* CONECTORSERIAL_H_ */

@@ -75,7 +75,7 @@ protected: // atributos
 	bool listener;
 	int temp;
 
-private: // Ejecución de comandos.
+protected: // Ejecución de comandos.
 	bool sendMessage(string msg);
 	bool buildEmptyCmd(string cmd,string node);
 	bool buildArgsCmd(string cmd,string node,string args,int minArgs,int maxArgs);
@@ -113,11 +113,6 @@ public:
 	
 	void launchListener();
 	void Close();
-	
-	void setText(string msg);
-	void writeText(string msg);
-	void writeLine(int line,string text);
-		
 };
 
 #endif /* CONECTORBUSCAN_H_ */

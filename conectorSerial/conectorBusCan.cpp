@@ -200,9 +200,6 @@ bool conectorBusCan::exec(string command, string node, string args) {
 	case cm_TxDigitalInput:
 		this->buildEmptyCmd(id, node);
 		break;
-	default:
-		writeText(args);
-		break;
 	}
 	return false;
 }
@@ -294,55 +291,13 @@ void conectorBusCan::responseAction(string msg){
 }
 
 
-void setText(string msg){
-	
-}
-
 string conectorBusCan::StrToDbHex(string text){
 	string out="";
-	for(int i =0;i< text.size();i++){
+	for(unsigned int i =0;i< text.size();i++){
 		out += this->HexToStr(text[i]);
 	}
-	cout << "StrToDbHex valor devuelto"<< out <<endl;
+	cout << "StrToDbHex valor de entrada:: "<<text<<"  valor devuelto"<< out <<endl;
 	return out;
-}
-
-void conectorBusCan::writeLine(int line,string text){
-	int size = text.length();
-	string buffer="";
-	int pos=0,nblock=0;
-// 	if (size > 20){
-// 		text.substr(0,20);
-// 		size=20;
-// 	}
-// 	nblock = ceil(size/5)-1;
-// 	for (int i=0; i<nblock;i++){
-// 		exec("WrDisplay","02",HexToStr(i*5)+StrToDbHex(text.substr(i*5,5)));
-// 	}
-	for(int i=0;( (i<size) && (i<20) );i++){
-		cout << "writeLine: "<< i<<endl;
-		if ((i != 0) && ((i %5)== 0)){
-			exec("WrDisplay","02",HexToStr(pos)+StrToDbHex(buffer));//buffer);
-			pos+=5;
-			buffer.clear();
-		}
-		else	buffer += text[i];
-	}
-}
-
-void conectorBusCan::writeText(string msg){
-	exec("ClrDisplay","02");
-	writeLine(1,msg);/*
-	string first,second;
-	int size;
-	exec("ClrDisplay","02");
-	if (msg.length()>20){
-		first= msg.substr(0,20);
-		second = msg.substr(20,msg.length());
-	}
-	else		first=msg;
-	*/
-	
 }
 
 // CFG previa: 02 B2 06 F0E00A0A6300 D2

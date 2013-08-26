@@ -411,3 +411,12 @@ pthread_t conectorSerial::Create_Thread_Port() {
 	pthread_create(&idHilo, NULL, &conectorSerial::Handle_Thread,  (void *)this);
 	return idHilo;
 }
+
+
+HANDLE conectorSerial::getFD(){
+	return this->fd;
+}
+
+void conectorSerial::setFD(HANDLE fd){
+	this->fd = fd;
+}
